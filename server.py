@@ -18,7 +18,7 @@ class Battlesnake(object):
         # TIP: If you open your Battlesnake URL in browser you should see this data
         return {
             "apiversion": "1",
-            "author": "Polok Ghosh",  # TODO: Your Battlesnake Username
+            "author": "Polokghosh53",  # TODO: Your Battlesnake Username
             "color": "#888888",  # TODO: Personalize
             "head": "beluga",  # TODO: Personalize
             "tail": "curled",  # TODO: Personalize
