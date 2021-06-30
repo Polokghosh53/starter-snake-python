@@ -19,8 +19,8 @@ class Battlesnake(object):
         return {
             "apiversion": "1",
             "author": "Polokghosh53",  # TODO: Your Battlesnake Username
-            "color": "#888888",  # TODO: Personalize
-            "head": "beluga",  # TODO: Personalize
+            "color": "#736CCB",  # TODO: Personalize
+            "head": "tongue",  # TODO: Personalize
             "tail": "curled",  # TODO: Personalize
         }
 
@@ -38,17 +38,54 @@ class Battlesnake(object):
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
     def move(self):
-        # This function is called on every turn of a game. It's how your snake decides where to move.
-        # Valid moves are "up", "down", "left", or "right".
-        # TODO: Use the information in cherrypy.request.json to decide your next move.
-        data = cherrypy.request.json
+			data = cherrypy.request.json
+			body = data["you"]["body"]
+            possible_moves = ["up", "down", "left", "right"]
+			safe_moves = self.getSafeMoves(possible_moves, body, data["board"])
 
-        # Choose a random direction to move in
-        possible_moves = ["up", "down", "left", "right"]
-        move = random.choice(possible_moves)
+			if safe_moves:
+				move = random.choice(safe_moves)
+				return {"move":move}
 
-        print(f"MOVE: {move}")
-        return {"move": move}
+		def getNext(self, currentHead, nextMove):
+			futureHead = currentHead.copy()
+			if nextMove == "left":
+				futureHead['x'] = currentHead['x'] - 1
+			if nextMove == "right":
+				futureHead['x'] = currentHead['x'] + 1
+			if nextMove == "up":
+				futureHead['y'] = currentHead['y'] + 1
+			if nextMove == "down":
+				futureHead['y'] = currentHead['y'] - 1
+			return futureHead
+
+		def getSafeMoves(self, possible_moves, body, board):
+			safe_moves = []
+
+			for guess in possible_moves:
+				# check that if we make this move, will the snake die or not
+				guessCoord = self.getNext(body[0], guess)
+				if self.avoidWalls(guessCoord, board["width"],board["height"]) and self.avoidSnakes(guessCoord, board["snakes"]):
+					safe_moves.append(guess)
+				elif len(body) > 1 and guessCoord == body[:-1] and guess not in body[:-1]:
+					safe_moves.append(guess)
+			return safe_moves
+
+		def avoidWalls(self, futureHead, width, height):
+			result = True
+			x = int(futureHead['x'])
+			y = int(futureHead['y'])
+
+			if x < 0 or y < 0 or x >= width or y >= height:
+				result = False
+
+			return result
+
+		def avoidSnakes(self, futureHead, snakeBodies):
+			for snake in snakeBodies:
+				if futureHead in snake["body"][:-1]:
+					return False
+				return True
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
